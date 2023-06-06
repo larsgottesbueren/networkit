@@ -2433,7 +2433,7 @@ void Graph::forNodesInRandomOrder(L handle) const {
 template <typename L>
 void Graph::balancedParallelForNodes(L handle) const {
 // TODO: define min block size (and test it!)
-#pragma omp parallel for schedule(guided)
+#pragma omp parallel for schedule(guided) if (z > 10000)
     for (omp_index v = 0; v < static_cast<omp_index>(z); ++v) {
         if (exists[v]) {
             handle(v);
