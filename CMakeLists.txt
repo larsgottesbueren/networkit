@@ -214,6 +214,17 @@ else()
 endif()
 
 ################################################################################
+# Use lld linker, if available. It's way faster
+find_program(LLD_BIN lld)
+if (LLD_BIN)
+	message(STATUS "Found and will use LLVM linker " ${LLD_BIN})
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-ld=lld")
+else()
+	message(STATUS "Default linker")
+endif()
+
+
+################################################################################
 # Use TLX as a CMake submodule
 if(NOT NETWORKIT_EXT_TLX)
 	if(EXISTS "${PROJECT_SOURCE_DIR}/extlibs/tlx/CMakeLists.txt")
@@ -269,7 +280,7 @@ if(NETWORKIT_BUILD_CORE AND NETWORKIT_MONOLITH)
 			CXX_STANDARD ${NETWORKIT_CXX_STANDARD}
 			COMPILE_FLAGS "${NETWORKIT_CXX_FLAGS}"
 			LINK_FLAGS "${NETWORKIT_LINK_FLAGS}")
-	
+
 	install(TARGETS networkit
 			LIBRARY DESTINATION ${NETWORKIT_LIB_DEST}
 			ARCHIVE DESTINATION ${NETWORKIT_LIB_DEST}
@@ -293,9 +304,9 @@ endif()
 if(NETWORKIT_PYTHON)
 
 	if(WIN32)
-		# Linking against Python3_libs is only neccessary on Windows. On other OSes 
+		# Linking against Python3_libs is only neccessary on Windows. On other OSes
 		# this can lead to segmentation faults when importing NetworKit in Python.
-		if(${CMAKE_VERSION} VERSION_LESS "3.12.0") 
+		if(${CMAKE_VERSION} VERSION_LESS "3.12.0")
 			FIND_PACKAGE(FindPythonLibs ${NETWORKIT_PYTHON_VERSION} EXACT REQUIRED)
 		else()
 			FIND_PACKAGE(Python3 ${NETWORKIT_PYTHON_VERSION} EXACT COMPONENTS Interpreter Development REQUIRED)

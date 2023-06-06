@@ -593,3 +593,21 @@ cdef class LocalT(SelectiveCommunityDetector):
 	def __cinit__(self, Graph G):
 		self._G = G
 		self._this = new _LocalT(G._this)
+
+
+cdef extern from "<networkit/scd/MQI.hpp>":
+	cdef cppclass _MQI "NetworKit::MQI"(_SelectiveCommunityDetector):
+		_MQI(_Graph G) except +
+
+cdef class MQI(SelectiveCommunityDetector):
+	"""
+	MQI(G)
+
+	Parameters
+	----------
+	G : networkit.Graph
+		Graph in which the community shell be found.
+	"""
+	def __cinit__(self, Graph G):
+		self._G = G
+		self._this = new _MQI(G._this)

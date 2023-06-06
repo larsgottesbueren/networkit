@@ -11,6 +11,7 @@
 #include <limits>
 #include <set>
 #include <vector>
+#include <cstdint>
 
 #include <networkit/auxiliary/Log.hpp>
 

@@ -58,8 +58,7 @@ edgeweight EdmondsKarp::BFS(std::vector<node> &pred) const {
 
 edgeweight EdmondsKarp::directedBFS(const std::vector<count> &reverseEdges,
                                     std::vector<node> &pred) const {
-    std::fill(pred.begin(), pred.end(), none);
-    pred.resize(graph->upperNodeIdBound(), none);
+    pred.assign(graph->upperNodeIdBound(), none);
     std::vector<edgeweight> gain(graph->upperNodeIdBound(), std::numeric_limits<edgeweight>::max());
 
     std::queue<node> Q;
@@ -75,14 +74,15 @@ edgeweight EdmondsKarp::directedBFS(const std::vector<count> &reverseEdges,
         graph->forNeighborsOf(u, [&](node, node v, edgeweight weight, edgeid eid) {
             if (!sinkReached && pred[v] == none && flow[eid] < weight) {
                 pred[v] = u;
-                if (v != sink && !sinkReached) {
+                if (v != sink) {
                     Q.push(v);
                 } else {
                     sinkReached = true;
                 }
 
                 auto residCapa =
-                    weight - flow[eid] + (reverseEdges[eid] == none ? 0 : flow[reverseEdges[eid]]);
+                    weight - flow[eid]; // + (reverseEdges[eid] == none ? 0 : flow[reverseEdges[eid]]);
+                assert(gain[v] == std::numeric_limits<edgeweight>::max());
                 gain[v] = std::min(gain[u], residCapa);
             }
         });
@@ -90,7 +90,7 @@ edgeweight EdmondsKarp::directedBFS(const std::vector<count> &reverseEdges,
         if (sinkReached) {
             return gain[sink];
         }
-
+/*
         graph->forInNeighborsOf(u, [&](node, node v, edgeid eid) {
             if (!sinkReached && (reverseEdges[eid] == none) && (flow[eid] > 0)
                 && (pred[v] == none)) {
@@ -108,6 +108,7 @@ edgeweight EdmondsKarp::directedBFS(const std::vector<count> &reverseEdges,
         if (sinkReached) {
             return gain[sink];
         }
+  */
     } while (!Q.empty());
 
     return 0.0;
@@ -133,7 +134,9 @@ void EdmondsKarp::run() {
 void EdmondsKarp::runDirected() {
     std::vector<count> reverseEdges(graph->upperEdgeIdBound(), none);
     graph->parallelForEdges([&](node u, node v, edgeid eid) {
-        reverseEdges[eid] = graph->hasEdge(v, u) ? graph->edgeId(v, u) : none;
+      index reverse = graph->edgeId(v, u);
+      reverseEdges[eid] = reverse;
+      // reverseEdges[eid] = graph->hasEdge(v, u) ? graph->edgeId(v, u) : none;
     });
     std::vector<node> pred;
 
@@ -143,7 +146,14 @@ void EdmondsKarp::runDirected() {
         node v = sink;
         while (v != source) {
             node u = pred[v];
+            edgeid edge_id = graph->edgeId(u, v);
+            edgeid reverse_id = graph->edgeId(v, u);
+            flow[edge_id] += gain;
+            assert(flow[edge_id] <= graph->weight(u, v));
+            flow[reverse_id] -= gain;
+            assert(flow[reverse_id] <= graph->weight(v, u));
 
+            /*
             if (graph->hasEdge(u, v)) {
                 edgeid eid = graph->edgeId(u, v);
                 auto reverseId = reverseEdges[eid];
@@ -161,6 +171,7 @@ void EdmondsKarp::runDirected() {
                 flow[eid] -= gain;
                 assert(flow[eid] >= 0);
             }
+             */
 
             v = u;
         }
@@ -215,6 +226,7 @@ std::vector<node> EdmondsKarp::getSourceSet() const {
                     visited[v] = true;
                 }
             });
+            /*
             // Follow backwards edges in residual network
             graph->forInNeighborsOf(u, [&](node, node v, edgeid eid) {
                 if (!visited[v] && flow[eid] > 0) {
@@ -222,6 +234,7 @@ std::vector<node> EdmondsKarp::getSourceSet() const {
                     visited[v] = true;
                 }
             });
+             */
         } else {
             graph->forNeighborsOf(u, [&](node, node v, edgeweight weight, edgeid eid) {
                 if (!visited[v]
