@@ -2399,7 +2399,7 @@ void Graph::forNodes(L handle) const {
 
 template <typename L>
 void Graph::parallelForNodes(L handle) const {
-#pragma omp parallel for
+#pragma omp parallel for if (z > 10000)
     for (omp_index v = 0; v < static_cast<omp_index>(z); ++v) {
         if (exists[v]) {
             handle(v);
@@ -2456,7 +2456,7 @@ void Graph::forNodePairs(L handle) const {
 
 template <typename L>
 void Graph::parallelForNodePairs(L handle) const {
-#pragma omp parallel for schedule(guided)
+#pragma omp parallel for schedule(guided) if (z > 10000)
     for (omp_index u = 0; u < static_cast<omp_index>(z); ++u) {
         if (exists[u]) {
             for (node v = u + 1; v < z; ++v) {
@@ -2578,7 +2578,7 @@ inline void Graph::forEdgeImpl(L handle) const {
 
 template <bool graphIsDirected, bool hasWeights, bool graphHasEdgeIds, typename L>
 inline void Graph::parallelForEdgesImpl(L handle) const {
-#pragma omp parallel for schedule(guided)
+#pragma omp parallel for schedule(guided) if (z > 10000)
     for (omp_index u = 0; u < static_cast<omp_index>(z); ++u) {
         forOutEdgesOfImpl<graphIsDirected, hasWeights, graphHasEdgeIds, L>(u, handle);
     }
@@ -2755,7 +2755,7 @@ template <typename L>
 double Graph::parallelSumForNodes(L handle) const {
     double sum = 0.0;
 
-#pragma omp parallel for reduction(+ : sum)
+#pragma omp parallel for reduction(+ : sum) if (z > 10000)
     for (omp_index v = 0; v < static_cast<omp_index>(z); ++v) {
         if (exists[v]) {
             sum += handle(v);
