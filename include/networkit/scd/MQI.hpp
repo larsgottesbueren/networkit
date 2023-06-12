@@ -13,7 +13,7 @@ namespace NetworKit {
  */
 class MQI : public SelectiveCommunityDetector {
 private:
-    double alpha;
+    edgeweight graph_volume = 0.0;
 
 public:
     /**
@@ -32,6 +32,8 @@ public:
     std::set<node> expandOneCommunity(const std::set<node> &s) override;
 
     using SelectiveCommunityDetector::expandOneCommunity;
+
+    void growViaBFSUntilHalf(std::set<node>& s);
 };
 
 } // namespace NetworKit

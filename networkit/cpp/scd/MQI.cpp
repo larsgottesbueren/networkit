@@ -1,12 +1,20 @@
 #include <networkit/scd/MQI.hpp>
 
+#include <networkit/auxiliary/NumericTools.hpp>
 #include <networkit/flow/EdmondsKarp.hpp>
 #include <networkit/flow/PushRelabel.hpp>
+#include <networkit/scd/SetConductance.hpp>
+
+#include <networkit/auxiliary/SignalHandling.hpp>
+
+#include <queue>
 
 namespace NetworKit {
 
 MQI::MQI(const Graph &g) :
-      SelectiveCommunityDetector(g) {}
+      SelectiveCommunityDetector(g) {
+    graph_volume = g.totalEdgeWeight() * 2;
+}
 
 std::pair<double, double> ComputeCutAndVolume(const Graph& graph, const std::set<node>& community) {
     double cut = 0.0, volume = 0.0;
@@ -26,11 +34,45 @@ std::pair<double, double> ComputeCutAndVolume(const Graph& graph, const std::set
     return std::make_pair(cut, volume);
 }
 
+edgeweight GetConductance(const Graph& g, const std::set<node>& s) {
+    SetConductance cond(g, s);
+    cond.run();
+    return cond.getConductance();
+}
+
+void MQI::growViaBFSUntilHalf(std::set<node> &s) {
+    std::queue<node> queue;
+    edgeweight max_vol = graph_volume / 3;
+    edgeweight cur_vol = 0.0;
+    for (const node v : s) {
+        queue.push(v);
+        cur_vol += g->weightedDegree(v, true);
+    }
+    while (cur_vol < max_vol - 1 && !queue.empty()) {
+        node u = queue.front();
+        queue.pop();
+        g->forNeighborsOf(u, [&](node v) {
+            edgeweight vol = g->weightedDegree(v, true);
+            if (cur_vol + vol < max_vol && s.find(v) == s.end()) {
+                cur_vol += vol;
+                queue.push(v);
+                s.emplace(v);
+            }
+        });
+    }
+}
+
 std::set<node> MQI::expandOneCommunity(const std::set<node> &s) {
     std::set<node> sink_side = s;
 
+    growViaBFSUntilHalf(sink_side);
+
+    edgeweight prev_conductance = GetConductance(*g, sink_side);
+
     size_t iteration = 0;
+    Aux::SignalHandler handler;
     while (true) {
+        handler.assureRunning();
         double cut, volume;
         std::tie(cut, volume) = ComputeCutAndVolume(*g, sink_side);
         INFO("MQI iteration ", ++iteration, " cut ", cut, " volume ", volume, " community size ", sink_side.size());
@@ -45,34 +87,40 @@ std::set<node> MQI::expandOneCommunity(const std::set<node> &s) {
         node source = flow_network.numberOfNodes() - 1;
         node sink = source - 1;
         node counter = 0;
-        size_t cut_counter = 0;
+        edgeweight cut_counter = 0;
+        edgeweight at_source = 0.0, at_sink = 0.0;
         for (node u_global : local_to_global) {
             const node u_local = global_to_local[u_global];
             assert(counter == u_local);
             counter++;
-            index incoming_cut = 0;
-            g->forNeighborsOf(u_global, [&](node v_global) {
+            edgeweight incoming_cut = 0;
+            g->forNeighborsOf(u_global, [&](node, node v_global, edgeweight w) {
               const node v_local = global_to_local[v_global];
               if (v_local != none) {
                   // assumes that the opposite edge is inserted too
                   flow_network.addPartialOutEdge(Unsafe{}, u_local, v_local, volume);
               } else {
-                  cut_counter++;
-                  incoming_cut++;
+                  cut_counter += w;
+                  incoming_cut += w;
               }
             });
 
             if (incoming_cut > 0) {
+                at_source += volume * incoming_cut;
                 flow_network.addPartialOutEdge(Unsafe{}, source, u_local, volume * incoming_cut);
                 flow_network.addPartialOutEdge(Unsafe{}, u_local, source, 0.0);
             }
 
             edgeweight node_volume = g->weightedDegree(u_global, true);
+            at_sink += cut * node_volume;
             flow_network.addPartialOutEdge(Unsafe{}, u_local, sink, cut * node_volume);
             flow_network.addPartialOutEdge(Unsafe{}, sink, u_local, 0.0);
         }
 
         assert(cut_counter == cut);
+        INFO("at source = ", at_source, " at sink = ", at_sink, " difference = ", at_source - at_sink);
+        assert(Aux::NumericTools::equal(at_source, at_sink, 1e-4));
+
 
         flow_network.indexEdges();
 
@@ -80,38 +128,57 @@ std::set<node> MQI::expandOneCommunity(const std::set<node> &s) {
         timer.start();
 
         PushRelabel max_flow(flow_network, source, sink);
+        // EdmondsKarp max_flow(flow_network, source, sink);
+
         max_flow.run();
         timer.stop();
         INFO("flow algo finished. flow = ", max_flow.getMaxFlow(), " cut * volume = ", cut * volume, " took ", timer.elapsedTag());
-        if (max_flow.getMaxFlow() == cut * volume) {  // TODO floating point imprecision?
+        if (Aux::NumericTools::equal(max_flow.getMaxFlow(), cut * volume, 1e-8) ) {
             break;
         }
 
 
         std::vector<node> source_side_sparse = max_flow.getSourceSet();
+        size_t removed = 0;
         INFO("Source set size ", source_side_sparse.size());
         for (node x : source_side_sparse) {
             assert(x != sink);
             if (x != source) {
                 sink_side.erase(local_to_global[x]);
+                removed++;
+            }
+            if (x == sink) {
+                ERROR("sink reached");
             }
         }
 
-        /*
-                std::vector<node> sink_side_vec = max_flow.getSinkSet();
-                std::set<node> sink_side2;
-                for (node x : sink_side_vec) {
-                    if (x != sink) sink_side2.emplace(local_to_global[x]);
-                }
-                INFO("Sink set size " , sink_side2.size());
-                assert(sink_side2 == sink_side);
+        if (removed == 0) {
+            INFO("No nodes removed --> terminate");
+            break;
+        }
 
-         */
+#if false
+        std::vector<node> sink_side_vec = max_flow.getSinkSet();
+        std::set<node> sink_side2;
+        for (node x : sink_side_vec) {
+            if (x != sink) sink_side2.emplace(local_to_global[x]);
+            if (x == source) ERROR("source reached");
+        }
+        INFO("Sink set size " , sink_side2.size());
+        assert(sink_side2 == sink_side);    // this one doesnt have to hold.
+#endif
 
-
-
-
-
+        edgeweight next_conductance = GetConductance(*g, sink_side);
+        if (next_conductance > prev_conductance) {
+            std::tie(cut, volume) = ComputeCutAndVolume(*g, sink_side);
+            INFO("cut = ", cut, " volume = ", volume);
+            ERROR("prev conductance = ", prev_conductance, " next conductance = ", next_conductance);
+            // throw std::runtime_error("MQI increased conductance");
+        }
+        if (next_conductance == prev_conductance) {
+            ERROR("MQI kept conductance the same, but didn't terminate ", prev_conductance, next_conductance);
+        }
+        prev_conductance = next_conductance;
     }
 
     return sink_side;

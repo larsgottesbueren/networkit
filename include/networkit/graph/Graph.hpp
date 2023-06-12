@@ -2588,7 +2588,7 @@ template <bool graphIsDirected, bool hasWeights, bool graphHasEdgeIds, typename 
 inline double Graph::parallelSumForEdgesImpl(L handle) const {
     double sum = 0.0;
 
-#pragma omp parallel for reduction(+ : sum)
+#pragma omp parallel for reduction(+ : sum) if (z > 10000)
     for (omp_index u = 0; u < static_cast<omp_index>(z); ++u) {
         for (index i = 0; i < outEdges[u].size(); ++i) {
             node v = outEdges[u][i];

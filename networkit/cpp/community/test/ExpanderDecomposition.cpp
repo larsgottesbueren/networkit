@@ -6,10 +6,9 @@
 #include <networkit/scd/PageRankNibble.hpp>
 #include <networkit/scd/MQI.hpp>
 #include <networkit/scd/CombinedSCD.hpp>
-
+#include <networkit/auxiliary/SignalHandling.hpp>
 
 namespace NetworKit {
-
 
 class ExpanderDecompositionBenchmark : public testing::Test {
 public:
@@ -30,7 +29,10 @@ public:
         graph = reader.read(graphPath);
     }
 
-    void run() {
+    void run(const std::string& path) {
+        METISGraphReader reader;
+        // graph = reader.read(path);
+
         INFO("n = ", graph.numberOfNodes(), " n* = ",  graph.upperNodeIdBound(), " m = ", graph.numberOfEdges());
         PageRankNibble prn(graph, 0.1, 0.0001);
         MQI mqi(graph);
@@ -42,7 +44,23 @@ public:
 };
 
 TEST_F(ExpanderDecompositionBenchmark, bench) {
-    run();
+    run("..");
+    std::exit(0);
+
+    std::vector<std::string> paths;
+    std::string path_file = "paths.txt";
+    std::ifstream file(path_file);
+    std::string line;
+    while (std::getline(file, line)) {
+        paths.push_back(line);
+    }
+    Aux::SignalHandler handler;
+    for (const auto& path : paths) {
+        INFO("running on graph = ", path);
+        run(path);
+        handler.assureRunning();
+    }
+
 }
 
 } /* namespace NetworKit */
