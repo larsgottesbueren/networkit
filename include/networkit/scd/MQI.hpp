@@ -32,8 +32,6 @@ public:
     std::set<node> expandOneCommunity(const std::set<node> &s) override;
 
     using SelectiveCommunityDetector::expandOneCommunity;
-
-    void growViaBFSUntilHalf(std::set<node>& s);
 };
 
 } // namespace NetworKit

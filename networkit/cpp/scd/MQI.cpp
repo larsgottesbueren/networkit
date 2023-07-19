@@ -40,32 +40,8 @@ edgeweight GetConductance(const Graph& g, const std::set<node>& s) {
     return cond.getConductance();
 }
 
-void MQI::growViaBFSUntilHalf(std::set<node> &s) {
-    std::queue<node> queue;
-    edgeweight max_vol = graph_volume / 3;
-    edgeweight cur_vol = 0.0;
-    for (const node v : s) {
-        queue.push(v);
-        cur_vol += g->weightedDegree(v, true);
-    }
-    while (cur_vol < max_vol - 1 && !queue.empty()) {
-        node u = queue.front();
-        queue.pop();
-        g->forNeighborsOf(u, [&](node v) {
-            edgeweight vol = g->weightedDegree(v, true);
-            if (cur_vol + vol < max_vol && s.find(v) == s.end()) {
-                cur_vol += vol;
-                queue.push(v);
-                s.emplace(v);
-            }
-        });
-    }
-}
-
 std::set<node> MQI::expandOneCommunity(const std::set<node> &s) {
     std::set<node> sink_side = s;
-
-    growViaBFSUntilHalf(sink_side);
 
     edgeweight prev_conductance = GetConductance(*g, sink_side);
 
