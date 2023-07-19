@@ -52,7 +52,13 @@ void PersonalizedPageRankJaccardScore::run() {
             denominator += q[r].second;
             r++;
         }
-        scoreData[e_id] = numerator / denominator;
+        if (denominator > 0.0) {
+            scoreData[e_id] = numerator / denominator;
+        } else {
+            // shouldn't happen if PPR does something useful, but let's be safe
+            scoreData[e_id] = 0.0;
+        }
+
     });
 
     hasRun = true;
