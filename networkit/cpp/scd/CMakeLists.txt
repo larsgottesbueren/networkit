@@ -14,6 +14,7 @@ networkit_add_module(scd
     TwoPhaseL.cpp
     TCE.cpp
 	MQI.cpp
+	EdgeScoreThenSCD.cpp
     )
 
 networkit_module_link_modules(scd
