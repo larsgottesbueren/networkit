@@ -9,10 +9,10 @@ networkit_add_module(edgescores
     GeometricMeanScore.cpp
     PrefixJaccardScore.cpp
     TriangleEdgeScore.cpp
+	PersonalizedPageRankJaccardScore.cpp
     )
 
 networkit_module_link_modules(edgescores
     auxiliary graph)
 
 add_subdirectory(test)
-

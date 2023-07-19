@@ -2,8 +2,6 @@
 #include <networkit/auxiliary/SignalHandling.hpp>
 #include <networkit/scd/ApproximatePageRank.hpp>
 
-#include <omp.h>
-
 namespace NetworKit {
 
 PersonalizedPageRankJaccardScore::PersonalizedPageRankJaccardScore(const Graph &G, double alpha, double eps)
