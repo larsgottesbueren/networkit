@@ -73,11 +73,11 @@ cdef class SelectiveCommunityDetector:
 		except TypeError:
 			return self._this.expandOneCommunity(<node?>seeds)
 
-	def setGraph(self, graph):
-	    """
-	    setGraph(graph)
-	    """
-	    self._this.setGraph(graph)
+	def setGraph(self, Graph graph):
+		"""
+		setGraph(graph)
+		"""
+		self._this.setGraph(graph._this)
 
 cdef extern from "<networkit/scd/ApproximatePageRank.hpp>":
 	cdef cppclass _ApproximatePageRank "NetworKit::ApproximatePageRank":
