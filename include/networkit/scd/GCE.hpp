@@ -34,7 +34,7 @@ public:
     // inherit method from parent class.
     using SelectiveCommunityDetector::expandOneCommunity;
 
-    void setGraph(const Graph* new_g) override;
+    void setGraph(const Graph& new_g) override;
 
 private:
     std::string objective; // name of objective function

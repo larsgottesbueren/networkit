@@ -25,8 +25,8 @@ std::set<node> SelectiveCommunityDetector::expandOneCommunity(node s) {
     return expandOneCommunity(std::set<node>({s}));
 }
 
-void SelectiveCommunityDetector::setGraph(const Graph* new_g) {
-    g = new_g;
+void SelectiveCommunityDetector::setGraph(const Graph& new_g) {
+    g = &new_g;
 }
 
 } /* namespace NetworKit */

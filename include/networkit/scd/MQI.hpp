@@ -33,7 +33,7 @@ public:
 
     using SelectiveCommunityDetector::expandOneCommunity;
 
-    void setGraph(const Graph* new_g) override;
+    void setGraph(const Graph& new_g) override;
 };
 
 } // namespace NetworKit

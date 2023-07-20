@@ -14,7 +14,7 @@ CliqueDetect::CliqueDetect(const Graph &g) : SelectiveCommunityDetector(g) {
         throw std::runtime_error("CliqueDetect work only with undirected graphs.");
 }
 
-void CliqueDetect::setGraph(const Graph* new_g) {
+void CliqueDetect::setGraph(const Graph& new_g) {
     SelectiveCommunityDetector::setGraph(new_g);
     if (g->numberOfSelfLoops() > 0)
         throw std::runtime_error("CliqueDetect works only with simple graphs.");

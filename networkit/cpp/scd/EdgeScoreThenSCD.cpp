@@ -9,7 +9,7 @@ EdgeScoreThenSCD::EdgeScoreThenSCD(const Graph &g, SelectiveCommunityDetector &s
     edge_score.run();
     EdgeScoreAsWeight edge_score_as_weight(g, edge_score.scores(), false, 0, 1);
     reweighted_graph = edge_score_as_weight.calculate();
-    scd.setGraph(&reweighted_graph);
+    scd.setGraph(reweighted_graph);
     // TODO beware use-after-free. The SCD object will live beyond this EdgeScoreThenSCD object
     // but it can't be used anymore since the graph is gone.
     // For our use-case right now, it's fine, since that doesn't happen.
@@ -24,7 +24,7 @@ std::set<node> EdgeScoreThenSCD::expandOneCommunity(const std::set<node> &s) {
     return scd.expandOneCommunity(s);
 }
 
-void EdgeScoreThenSCD::setGraph(const Graph* new_g) {
+void EdgeScoreThenSCD::setGraph(const Graph& new_g) {
     scd.setGraph(new_g);
 }
 

@@ -68,7 +68,7 @@ public:
      */
     virtual std::set<node> expandOneCommunity(const std::set<node> &seeds) = 0;
 
-    virtual void setGraph(const Graph* new_g);
+    virtual void setGraph(const Graph& new_g);
 
 protected:
     const Graph *g;

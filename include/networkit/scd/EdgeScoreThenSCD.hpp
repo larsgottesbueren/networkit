@@ -36,7 +36,7 @@ public:
      */
     std::set<node> expandOneCommunity(const std::set<node> &s) override;
 
-    void setGraph(const Graph* new_g) override;
+    void setGraph(const Graph& new_g) override;
 
 protected:
     SelectiveCommunityDetector &scd;
