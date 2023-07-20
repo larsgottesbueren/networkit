@@ -73,6 +73,12 @@ cdef class SelectiveCommunityDetector:
 		except TypeError:
 			return self._this.expandOneCommunity(<node?>seeds)
 
+	def setGraph(self, graph):
+	    """
+	    setGraph(graph)
+	    """
+	    self._this.setGraph(graph)
+
 cdef extern from "<networkit/scd/ApproximatePageRank.hpp>":
 	cdef cppclass _ApproximatePageRank "NetworKit::ApproximatePageRank":
 		_ApproximatePageRank(_Graph g, double alpha, double epsilon) except +
@@ -142,7 +148,7 @@ cdef class PageRankNibble(SelectiveCommunityDetector):
 
 	Parameters
 	----------
-	G : networkit.Graph 
+	G : networkit.Graph
 		The input graph, must be unweighted.
 	alpha : float
 		Loop probability of random walk; smaller values tend to produce larger communities.
@@ -377,7 +383,7 @@ cdef class SCDGroundTruthComparison(Algorithm):
 		Returns
 		-------
 		dict(int `:` float)
-			A dict between community and the (unweighted) average of the jaccard indices.	
+			A dict between community and the (unweighted) average of the jaccard indices.
 		"""
 		return (<_SCDGroundTruthComparison*>(self._this)).getAverageJaccard()
 	def getAverageF1(self):

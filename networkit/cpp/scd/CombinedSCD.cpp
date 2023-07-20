@@ -14,4 +14,9 @@ std::set<node> CombinedSCD::expandOneCommunity(const std::set<node> &s) {
     return second.expandOneCommunity(first.expandOneCommunity(s));
 }
 
+void CombinedSCD::setGraph(const Graph* new_g) {
+    first.setGraph(new_g);
+    second.setGraph(new_g);
+}
+
 } // namespace NetworKit

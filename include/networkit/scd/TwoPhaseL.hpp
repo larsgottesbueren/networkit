@@ -34,6 +34,8 @@ public:
 
     // inherit method from parent class.
     using SelectiveCommunityDetector::expandOneCommunity;
+
+    using SelectiveCommunityDetector::setGraph;
 };
 
 } /* namespace NetworKit */

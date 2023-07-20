@@ -14,6 +14,14 @@ CliqueDetect::CliqueDetect(const Graph &g) : SelectiveCommunityDetector(g) {
         throw std::runtime_error("CliqueDetect work only with undirected graphs.");
 }
 
+void CliqueDetect::setGraph(const Graph* new_g) {
+    SelectiveCommunityDetector::setGraph(new_g);
+    if (g->numberOfSelfLoops() > 0)
+        throw std::runtime_error("CliqueDetect works only with simple graphs.");
+    if (g->isDirected())
+        throw std::runtime_error("CliqueDetect work only with undirected graphs.");
+}
+
 std::set<node> CliqueDetect::expandOneCommunity(node s) {
     // 1. get the maximum clique in neighbors(s) + s
     std::set<node> result;
@@ -157,4 +165,5 @@ CliqueDetect::getMaximumWeightClique(const std::vector<node> &nodes,
 
     return maxClique;
 }
+
 } /* namespace NetworKit */

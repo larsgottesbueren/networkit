@@ -45,6 +45,8 @@ public:
      */
     std::set<node> expandOneCommunity(const std::set<node> &s) override;
 
+    using SelectiveCommunityDetector::setGraph;
+
 protected:
     const double alpha;
 };

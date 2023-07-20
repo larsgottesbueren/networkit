@@ -122,4 +122,11 @@ std::set<node> GCE::expandOneCommunity(const std::set<node> &s) {
     }
 }
 
+void GCE::setGraph(const Graph* new_g) {
+    SelectiveCommunityDetector::setGraph(new_g);
+    if (g->numberOfSelfLoops()) {
+        throw std::runtime_error("Graphs with self-loops are not supported in GCE");
+    }
+}
+
 } /* namespace NetworKit */

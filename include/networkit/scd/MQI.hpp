@@ -32,6 +32,8 @@ public:
     std::set<node> expandOneCommunity(const std::set<node> &s) override;
 
     using SelectiveCommunityDetector::expandOneCommunity;
+
+    void setGraph(const Graph* new_g) override;
 };
 
 } // namespace NetworKit

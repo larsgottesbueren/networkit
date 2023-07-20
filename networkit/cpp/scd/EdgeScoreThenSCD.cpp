@@ -24,4 +24,8 @@ std::set<node> EdgeScoreThenSCD::expandOneCommunity(const std::set<node> &s) {
     return scd.expandOneCommunity(s);
 }
 
+void EdgeScoreThenSCD::setGraph(const Graph* new_g) {
+    scd.setGraph(new_g);
+}
+
 } // namespace NetworKit

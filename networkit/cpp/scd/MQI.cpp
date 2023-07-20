@@ -160,4 +160,9 @@ std::set<node> MQI::expandOneCommunity(const std::set<node> &s) {
     return sink_side;
 }
 
+void MQI::setGraph(const Graph* new_g) {
+    SelectiveCommunityDetector::setGraph(new_g);
+    graph_volume = g->totalEdgeWeight() * 2;
+}
+
 }

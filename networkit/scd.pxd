@@ -11,6 +11,7 @@ cdef extern from "<networkit/scd/SelectiveCommunityDetector.hpp>":
 		map[node, set[node]] run(set[node] seeds) except +
 		set[node] expandOneCommunity(node seed) except +
 		set[node] expandOneCommunity(set[node] seeds) except +
+		void setGraph(_Graph G) except +
 
 cdef class SelectiveCommunityDetector:
 	cdef _SelectiveCommunityDetector *_this

@@ -45,6 +45,8 @@ public:
      */
     std::set<node> expandOneCommunity(const std::set<node> &seeds) override;
 
+    void setGraph(const Graph* new_g) override;
+
 protected:
     std::vector<node> getMaximumWeightClique(const std::vector<node> &nodes,
                                              const std::vector<edgeweight> &seedToNodeWeight) const;
